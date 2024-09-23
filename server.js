@@ -30,7 +30,7 @@ app.use(cors())
 
 
 // connecting to MongoDB
-mongoose.connect("mongodb://localhost:27017/blogdb")
+mongoose.connect(process.env.DB_URI)
     .then(() => {
         // listening for requests after the server is connected to the db
         app.listen(5000)
