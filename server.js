@@ -28,12 +28,13 @@ app.use(express.json())
 // setting up cors
 app.use(cors())
 
+const port = process.env.PORT || 3000
 
 // connecting to MongoDB
 mongoose.connect(process.env.DB_URI)
     .then(() => {
         // listening for requests after the server is connected to the db
-        app.listen(5000)
+        app.listen(port)
         console.log("Connected to MongoDB")
     }).catch(err => console.log(err))
 
