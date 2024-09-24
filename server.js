@@ -4,7 +4,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import Mailchimp from 'mailchimp-api-v3'
 import fs from 'fs'
-import cloudinary from './cloudinary/cloudinary.js'
+import { v2 as cloudinary } from "cloudinary"
 import { upload } from './cloudinary/multerConfig.js'
 import { mailchimpApiKey, audienceId } from './mailchimpConfig/mailchimp.js'
 
@@ -28,13 +28,15 @@ app.use(express.json())
 // setting up cors
 app.use(cors())
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 5000
 
 // connecting to MongoDB
 mongoose.connect(process.env.DB_URI)
     .then(() => {
         // listening for requests after the server is connected to the db
-        app.listen(port)
+        app.listen(port, () => {
+            console.log(`server is running on ${port}`)
+        })
         console.log("Connected to MongoDB")
     }).catch(err => console.log(err))
 
@@ -63,36 +65,23 @@ app.post("/newsletter/subscribe", (req, res) => {
 
 // saving new blog data in the db
 app.post('/all-blogs', upload.single('poster'), (req, res) => {
-
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
-    console.log(req.body)
 
-    cloudinary.uploader.upload(req.file.path)
-        .then(result => {
-            const blog = new Blog({
-                ...req.body,
-                blogImageUrl: result.secure_url
-            })
+    // Logging the file info to see what Cloudinary returns
+    console.log(req.file); // Cloudinary returns an object with secure_url among other things
 
-            blog.save()
-                .then(result => {
-                    // delete the file from uploads folder after uploaded to cloudinary
-                    fs.unlink(req.file.path, err => {
-                       if(err) console.error('Error: Failed to delete file', err)
-                    })
-                    res.json(result)
-                    
-                }).catch(err => console.log(err))
-        })
-        .catch(err => {
-            res.status(500).res.json({ error: 'Failed to save data in the database' })
-            console.error('Error saving data in the database', err)
-        })
+    // Use req.file.path or req.file.secure_url for the Cloudinary URL
+    const blog = new Blog({
+        ...req.body,
+        blogImageUrl: req.file.secure_url
+    });
 
-    
-})
+    blog.save()
+        .then(result => res.json(result))
+        .catch(err => res.status(500).json({ error: 'Failed to save blog' }));
+});
 
 // getting all blogs
 app.get('/all-blogs', (req, res) => {
