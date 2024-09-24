@@ -75,11 +75,15 @@ app.post('/all-blogs', upload.single('poster'), (req, res) => {
     // Use req.file.path or req.file.secure_url for the Cloudinary URL
     const blog = new Blog({
         ...req.body,
-        blogImageUrl: req.file.secure_url
+        blogImageUrl: req.file.path
     });
+    console.log("form data sent to the database")
 
     blog.save()
-        .then(result => res.json(result))
+        .then(result => {
+            res.json(result)
+            console.log('form has been saved in the database')
+        })
         .catch(err => res.status(500).json({ error: 'Failed to save blog' }));
 });
 
@@ -109,101 +113,3 @@ app.delete('/blogs/:id', (req, res) => {
         })
 })
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import express from 'express';
-// import cors from 'cors';
-// import { createTransport } from 'nodemailer';
-// import { connect, Schema, model } from 'mongoose';
-
-// const app = express();
-// const PORT = process.env.PORT || 5000;
-
-// Middleware
-// app.use(cors());
-// app.use(express.json());
-
-// Connect to MongoDB
-// connect('mongodb://127.0.0.1:27017/myNewsletter')
-//     .then(() => console.log('Connected to MongoDB'))
-//     .catch(err => console.error('Failed to connect to MongoDB', err));
-
-// Define a schema and model for subscribers
-// const subscriberSchema = new Schema({
-//     email: { type: String, required: true }
-// });
-
-// const Subscriber = model('Subscriber', subscriberSchema);
-
-// Nodemailer transporter setup
-// const transporter = createTransport({
-//     service: 'Gmail',
-//     auth: {
-//         user: 'testemail@gmail.com',
-//         pass: 'password'
-//     }
-// });
-
-// Route to handle subscription
-// app.post('/api/subscribe', async (req, res) => {
-//     const { email } = req.body;
-//     if (!email) {
-//         return res.status(400).json({ message: 'Email is required' });
-//     }
-
-//     try {
-//         const newSubscriber = new Subscriber({ email });
-//         await newSubscriber.save();
-
-//         Send a confirmation email
-//         const mailOptions = {
-//             from: 'youremail@gmail.com',
-//             to: email,
-//             subject: 'Subscription Confirmation',
-//             text: 'Thank you for subscribing to our newsletter!'
-//         };
-
-//         transporter.sendMail(mailOptions, (error, info) => {
-//             if (error) {
-//                 console.error(error);
-//                 return res.status(500).json({ message: 'Subscription failed. Please try again.' });
-//             } else {
-//                 console.log('Email sent: ' + info.response);
-//                 return res.status(200).json({ message: 'Subscription successful! Thank you.' });
-//             }
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ message: 'Subscription failed. Please try again.' });
-//     }
-// });
-
-// app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });

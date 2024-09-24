@@ -19,9 +19,6 @@ const blogSchema = new Schema({
         type: String,
         required: true
     },
-    authorImageUrl: {
-        type: String
-    },
     author: {
         type: String,
         required: true
