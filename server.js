@@ -7,6 +7,7 @@ import fs from 'fs'
 import { v2 as cloudinary } from "cloudinary"
 import { upload } from './cloudinary/multerConfig.js'
 import { mailchimpApiKey, audienceId } from './mailchimpConfig/mailchimp.js'
+import { sendNewsletter } from './mailchimpConfig/emailSender.js'
 
 // importing the model
 import Blog from './models/blog.js'
@@ -44,24 +45,36 @@ mongoose.connect(process.env.DB_URI)
 
 // sending email of new subscriber to mailchimp
 app.post("/newsletter/subscribe", (req, res) => {
-    const { email } = req.body
+    const { email } = req.body;
 
-    // checking if the email exists
-    if(!email) {
-        res.status(400).json({ message: "Email is required" })
+    if (!email) {
+        return res.status(400).json({ message: "Email is required" });
     }
 
     mailchimp.post(`lists/${audienceId}/members`, {
         email_address: email,
         status: "subscribed"
     })
-    .then(result => res.json(result))
-    .catch(err => {
-        console.log(err.response.body);  // log Mailchimp's detailed error response
-        res.status(500).json({ message: "Failed to subscribe", error: err.response.body });
+    .then(result => {
+        res.json(result);
+        
+        // Call sendNewsletter after subscription
+        sendNewsletter()
+          .then(() => {
+            console.log(`Newsletter sent to subscribers`);
+          })
+          .catch(error => {
+            console.error(`Error sending newsletter to subscribers:`, error);
+          });
     })
+    .catch(err => {
+        console.log(err.response.body);
+        res.status(500).json({ message: "Failed to subscribe", error: err.response.body });
+    });
+});
 
-})
+
+
 
 // saving new blog data in the db
 app.post('/all-blogs', upload.single('poster'), (req, res) => {
