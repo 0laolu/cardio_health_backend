@@ -2,12 +2,13 @@ import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import Mailchimp from 'mailchimp-api-v3'
-import fs from 'fs'
+// import Mailchimp from 'mailchimp-api-v3'
+// import fs from 'fs'
 import { v2 as cloudinary } from "cloudinary"
 import { upload } from './cloudinary/multerConfig.js'
-import { mailchimpApiKey, audienceId } from './mailchimpConfig/mailchimp.js'
-import { sendNewsletter } from './mailchimpConfig/emailSender.js'
+import sendEmail from './mailchimpConfig/emailSender.js'
+// import { mailchimpApiKey, audienceId } from './mailchimpConfig/mailchimp.js'
+// import { sendNewsletter } from './mailchimpConfig/emailSender.js'
 
 // importing the model
 import Blog from './models/blog.js'
@@ -15,7 +16,7 @@ import Blog from './models/blog.js'
 dotenv.config()
 
 // creating the maichimp app
-const mailchimp = new Mailchimp(mailchimpApiKey)
+// const mailchimp = new Mailchimp(mailchimpApiKey)
 
 // creating the express app
 const app = express()
@@ -51,27 +52,38 @@ app.post("/newsletter/subscribe", (req, res) => {
         return res.status(400).json({ message: "Email is required" });
     }
 
-    mailchimp.post(`lists/${audienceId}/members`, {
-        email_address: email,
-        status: "subscribed"
-    })
-    .then(result => {
-        res.json(result);
-        
-        // Call sendNewsletter after subscription
-        sendNewsletter()
-          .then(() => {
-            console.log(`Newsletter sent to subscribers`);
-          })
-          .catch(error => {
-            console.error(`Error sending newsletter to subscribers:`, error);
-          });
-    })
-    .catch(err => {
-        console.log(err.response.body);
-        res.status(500).json({ message: "Failed to subscribe", error: err.response.body });
-    });
+    sendEmail(email)
+        .then(() => {
+            res.status(200).json({ message: "Email successfully submitted" })
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500).json({ message: "Failed to submit email" })
+        })
+
 });
+
+    // mailchimp.post(`lists/${audienceId}/members`, {
+    //     email_address: email,
+    //     status: "subscribed"
+    // })
+    // .then(result => {
+    //     res.json(result);
+        
+    //     // Call sendNewsletter after subscription
+    //     sendNewsletter()
+    //       .then(() => {
+    //         console.log(`Newsletter sent to subscribers`);
+    //       })
+    //       .catch(error => {
+    //         console.error(`Error sending newsletter to subscribers:`, error);
+    //       });
+    // })
+    // .catch(err => {
+    //     console.log(err.response.body);
+    //     res.status(500).json({ message: "Failed to subscribe", error: err.response.body });
+    // });
+
 
 
 
