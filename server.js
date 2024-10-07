@@ -63,30 +63,6 @@ app.post("/newsletter/subscribe", (req, res) => {
 
 });
 
-    // mailchimp.post(`lists/${audienceId}/members`, {
-    //     email_address: email,
-    //     status: "subscribed"
-    // })
-    // .then(result => {
-    //     res.json(result);
-        
-    //     // Call sendNewsletter after subscription
-    //     sendNewsletter()
-    //       .then(() => {
-    //         console.log(`Newsletter sent to subscribers`);
-    //       })
-    //       .catch(error => {
-    //         console.error(`Error sending newsletter to subscribers:`, error);
-    //       });
-    // })
-    // .catch(err => {
-    //     console.log(err.response.body);
-    //     res.status(500).json({ message: "Failed to subscribe", error: err.response.body });
-    // });
-
-
-
-
 
 // saving new blog data in the db
 app.post('/all-blogs', upload.single('poster'), (req, res) => {
@@ -128,6 +104,19 @@ app.get('/blogs/:id', (req, res) => {
         }).catch(err => console.log(err))
 })
 
+// updating parts of a blog
+app.patch('blogs/:id', (req, res) => {
+    Blog.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        .then(result => {
+            res.status(200).json(result)
+        }).catch(err => {
+            res.status(500).json()
+            console.log(err)
+        })
+})
+
+
+// deleting a blog
 app.delete('/blogs/:id', (req, res) => {
     Blog.findByIdAndDelete(req.params.id)
         .then(result => {
