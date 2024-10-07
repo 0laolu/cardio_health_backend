@@ -105,7 +105,7 @@ app.get('/blogs/:id', (req, res) => {
 })
 
 // updating parts of a blog
-app.patch('blogs/:id', (req, res) => {
+app.patch('/blogs/:id', (req, res) => {
     Blog.findByIdAndUpdate(req.params.id, req.body, { new: true })
         .then(result => {
             res.status(200).json(result)
