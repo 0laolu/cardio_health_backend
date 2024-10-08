@@ -78,6 +78,16 @@ app.post("/newsletter/subscribe", (req, res) => {
 
 });
 
+app.get('/newsletter/subscribe', (req, res) => {
+    Subscriber.find()
+        .then(result => {
+            res.status(200).json(result)
+        }).catch(err => {
+            res.status(500).json({ message: "Failed to fetch subscribers" })
+            console.log(err)
+        })
+})
+
 
 // saving new blog data in the db
 app.post('/all-blogs', upload.single('poster'), (req, res) => {
