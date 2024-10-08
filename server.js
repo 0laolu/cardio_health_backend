@@ -2,15 +2,14 @@ import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import dotenv from 'dotenv'
-// import Mailchimp from 'mailchimp-api-v3'
-// import fs from 'fs'
-import { v2 as cloudinary } from "cloudinary"
 import { upload } from './cloudinary/multerConfig.js'
 import sendEmail from './mailchimpConfig/emailSender.js'
-// import { mailchimpApiKey, audienceId } from './mailchimpConfig/mailchimp.js'
-// import { sendNewsletter } from './mailchimpConfig/emailSender.js'
 
-// importing the model
+
+// importing the Subscriber model
+import Subscriber from './models/subscriber.js'
+
+// importing the Blog model
 import Blog from './models/blog.js'
 
 dotenv.config()
@@ -52,6 +51,11 @@ app.post("/newsletter/subscribe", (req, res) => {
         return res.status(400).json({ message: "Email is required" });
     }
 
+    const existingSubscriber = Subscriber.findOne({ email })
+    if(existingSubscriber) {
+        return res.status(400).json({ message: "Email already subscribed" })
+    }
+
     sendEmail(email)
         .then(() => {
             res.status(200).json({ message: "Email successfully submitted" })
@@ -59,6 +63,17 @@ app.post("/newsletter/subscribe", (req, res) => {
         .catch(err => {
             console.log(err)
             res.status(500).json({ message: "Failed to submit email" })
+        })
+
+
+    const newSubscriber = new Subscriber({ email })
+    
+    newSubscriber.save()
+        .then(result => {
+            res.status(200).json(result)
+        }).catch(err => {
+            res.status(500).json({ message: "Failed to submit email" })
+            console.log(err)
         })
 
 });
