@@ -51,18 +51,13 @@ app.post("/newsletter/subscribe", (req, res) => {
         return res.status(400).json({ message: "Email is required" });
     }
 
-    const existingSubscriber = Subscriber.findOne({ email })
-    if(existingSubscriber) {
-        return res.status(400).json({ message: "Email already subscribed" })
-    }
-
     sendEmail(email)
         .then(() => {
-            res.status(200).json({ message: "Email successfully submitted" })
+            res.status(200).json({ message: "Email successfully sent" })
         })
         .catch(err => {
             console.log(err)
-            res.status(500).json({ message: "Failed to submit email" })
+            res.status(500).json({ message: "Failed to send email" })
         })
 
 
@@ -76,9 +71,15 @@ app.post("/newsletter/subscribe", (req, res) => {
             console.log(err)
         })
 
+
+    const existingSubscriber = Subscriber.findOne({ email })
+    if(existingSubscriber) {
+        return res.status(400).json({ message: "Subscriber already exists" })
+    }
+
 });
 
-app.get('/newsletter/subscribe', (req, res) => {
+app.get("/newsletter/subscribe", (req, res) => {
     Subscriber.find()
         .then(result => {
             res.status(200).json(result)
