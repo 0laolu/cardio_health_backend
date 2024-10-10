@@ -5,7 +5,6 @@ import dotenv from 'dotenv'
 import { upload } from './cloudinary/multerConfig.js'
 import sendEmail from './mailchimpConfig/emailSender.js'
 
-
 // importing the Subscriber model
 import Subscriber from './models/subscriber.js'
 
@@ -14,8 +13,6 @@ import Blog from './models/blog.js'
 
 dotenv.config()
 
-// creating the maichimp app
-// const mailchimp = new Mailchimp(mailchimpApiKey)
 
 // creating the express app
 const app = express()
@@ -23,8 +20,6 @@ const app = express()
 
 //middleware to parse JSON data
 app.use(express.json())
-
-// app.use(express.urlencoded({ extended: true }))
 
 // setting up cors
 app.use(cors())
@@ -40,8 +35,6 @@ mongoose.connect(process.env.DB_URI)
         })
         console.log("Connected to MongoDB")
     }).catch(err => console.log(err))
-
-
 
 // sending email of new subscriber to mailchimp
 app.post("/newsletter/subscribe", (req, res) => {
@@ -80,6 +73,24 @@ app.get("/newsletter/subscribe", (req, res) => {
             res.status(200).json(result)
         }).catch(err => {
             res.status(500).json({ message: "Failed to fetch subscribers" })
+            console.log(err)
+        })
+})
+
+
+app.post('/newsletter/unsubscribe', (req, res) => {
+    if(!email) {
+        res.status(400).json({ message: "Email is required" })
+    }
+
+    const { email } = req.body
+
+    Subscriber.findOneAndDelete({ email })
+        .then(result => {
+            res.status(200).json({ message: "Email successfully unsubscribed" })
+
+        }).catch(err => {
+            res.status(500).json({ message: "Failed to unsubscribe email" })
             console.log(err)
         })
 })
