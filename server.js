@@ -51,31 +51,26 @@ app.post("/newsletter/subscribe", (req, res) => {
         return res.status(400).json({ message: "Email is required" });
     }
 
-    sendEmail(email)
-        .then(() => {
-            res.status(200).json({ message: "Email successfully sent" })
-        })
-        .catch(err => {
-            console.log(err)
-            res.status(500).json({ message: "Failed to send email" })
-        })
+    Subscriber.findOne({ email })
+        .then(existingSubscriber => {
+            if(existingSubscriber) {
+                return res.status(400).json({ message: "Subscriber already exists" })
+            }
 
-
-    const newSubscriber = new Subscriber({ email })
-    
-    newSubscriber.save()
-        .then(result => {
-            res.status(200).json(result)
+            sendEmail(email)
+                .then(() => {
+                    const newSubscriber = new Subscriber({ email })
+                    newSubscriber.save()
+                        .then(result => {
+                            res.status(200).json({ message: "Email successfully submitted" })
+                        })
+                }).then(result => {
+                    res.status(200).json({ message: "Email successfully sent" })
+                })
         }).catch(err => {
-            res.status(500).json({ message: "Failed to submit email" })
-            console.log(err)
+            res.status(500).json({ message: "Something went wrong" })
+            console.log(err.message)
         })
-
-
-    const existingSubscriber = Subscriber.findOne({ email })
-    if(existingSubscriber) {
-        return res.status(400).json({ message: "Subscriber already exists" })
-    }
 
 });
 
