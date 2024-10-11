@@ -56,9 +56,12 @@ app.post("/newsletter/subscribe", (req, res) => {
                     newSubscriber.save()
                         .then(result => {
                             res.status(200).json({ message: "Email successfully submitted" })
+                        }).catch(err => {
+                            res.status(500).json({ message:  "Failed to save email"})
+                            console.log(err)
                         })
-                }).then(result => {
-                    res.status(200).json({ message: "Email successfully sent" })
+                }).catch(err => {
+                    res.status(500).json({ message: "Failed to send appreciation message" })
                 })
         }).catch(err => {
             res.status(500).json({ message: "Something went wrong" })
@@ -98,7 +101,8 @@ app.post('/newsletter/unsubscribe', (req, res) => {
                     res.status(200).json({ message: "Email successfully unsubscribed" })
 
                 })
-        }).catch(err => {
+        })
+        .catch(err => {
             res.status(500).json({ message: "Failed to unsubscribe email" })
             console.log(err)
         })
