@@ -79,11 +79,13 @@ app.get("/newsletter/subscribe", (req, res) => {
 
 
 app.post('/newsletter/unsubscribe', (req, res) => {
+
+
+    const { email } = req.body
+
     if(!email) {
         res.status(400).json({ message: "Email is required" })
     }
-
-    const { email } = req.body
 
     Subscriber.findOneAndDelete({ email })
         .then(result => {
