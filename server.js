@@ -87,14 +87,22 @@ app.post('/newsletter/unsubscribe', (req, res) => {
         res.status(400).json({ message: "Email is required" })
     }
 
-    Subscriber.findOneAndDelete({ email })
-        .then(result => {
-            res.status(200).json({ message: "Email successfully unsubscribed" })
+    Subscriber.findOne({ email })
+        .then(existingSubscriber => {
+            if(!existingSubscriber) {
+                return res.status(400).json({ message: "Email not subscribed" })
+            }
 
+            Subscriber.findOneAndDelete({ email })
+                .then(result => {
+                    res.status(200).json({ message: "Email successfully unsubscribed" })
+
+                })
         }).catch(err => {
             res.status(500).json({ message: "Failed to unsubscribe email" })
             console.log(err)
         })
+    
 })
 
 
