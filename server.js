@@ -20,6 +20,7 @@ const app = express()
 
 //middleware to parse JSON data
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
 
 // setting up cors
 app.use(cors())
@@ -151,15 +152,33 @@ app.get('/blogs/:id', (req, res) => {
 })
 
 // updating parts of a blog
-app.patch('/blogs/:id', (req, res) => {
-    Blog.findByIdAndUpdate(req.params.id, req.body, { new: true })
-        .then(result => {
-            res.status(200).json(result)
-        }).catch(err => {
-            res.status(500).json()
-            console.log(err)
+app.patch('/blogs/:id', upload.single('poster'), (req, res) => {
+    console.log('Request Body:', req.body); // Log non-file fields
+    console.log('File:', req.file); // Log uploaded file
+
+    const { id } = req.params;
+
+    let updateData = { ...req.body };
+
+    // Add image URL if a new file is uploaded
+    if (req.file) {
+        updateData.blogImageUrl = req.file.path;
+    }
+
+    console.log('Update Data:', updateData);
+
+    Blog.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
+        .then(updatedBlog => {
+            if (!updatedBlog) {
+                return res.status(404).json({ error: 'Blog not found' });
+            }
+            res.status(200).json(updatedBlog);
         })
-})
+        .catch(err => {
+            console.error('Error updating blog:', err);
+            res.status(500).json({ error: 'Failed to update blog' });
+        });
+});
 
 
 // deleting a blog
